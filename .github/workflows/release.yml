@@ -1,0 +1,77 @@
+name: Release nf-ospool
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: 'temurin'
+      
+      - name: Build plugin
+        run: ./gradlew assemble
+        env:
+          GRADLE_OPTS: '-Dorg.gradle.daemon=false'
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Verify plugin JAR exists
+        run: |
+          ls -lh build/libs/
+          test -f build/libs/nf-ospool-${{ steps.get_version.outputs.VERSION }}.jar
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/libs/nf-ospool-${{ steps.get_version.outputs.VERSION }}.jar
+          body: |
+            # nf-ospool ${{ steps.get_version.outputs.VERSION }}
+            
+            Nextflow plugin for the Open Science Pool (OSPool) HTCondor environment.
+            
+            ## Installation
+            
+            ```groovy
+            plugins {
+                id 'nf-ospool@${{ steps.get_version.outputs.VERSION }}'
+            }
+            ```
+            
+            ## Quick Start
+            
+            ```groovy
+            process.executor = 'ospool'
+            
+            executor {
+                $ospool {
+                    submitFileDir = '.nextflow/ospool-submit'
+                }
+            }
+            
+            workDir = '/staging/groups/mygroup/nextflow-work'
+            ```
+            
+            See [README.md](README.md) for complete documentation.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
