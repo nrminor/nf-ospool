@@ -54,6 +54,18 @@ executor {
 workDir = '/staging/groups/mygroup/nextflow-work'
 ```
 
+## Examples
+
+See the [examples/](examples/) directory for complete working examples:
+
+- **[basic/](examples/basic/)** - Minimal configuration to get started
+- **[with-containers/](examples/with-containers/)** - Using Docker/Singularity containers
+- **[staging/](examples/staging/)** - Automatic directory staging for project files
+
+Each example includes a complete `main.nf` and `nextflow.config` with detailed comments.
+
+**Note:** Examples require an HTCondor environment (CHTC submit node or OSPool access point) to run.
+
 ## Configuration Options
 
 ### Executor Configuration (`executor.$ospool`)
@@ -109,6 +121,7 @@ nextflow run my-pipeline.nf -plugins nf-ospool@0.1.0
 
 ## Documentation
 
+- **Examples**: See [examples/](examples/) for working examples you can run
 - **Architecture**: See [PLUGIN-ARCHITECTURE.md](PLUGIN-ARCHITECTURE.md) for detailed implementation documentation
 - **Nextflow Plugin Docs**: https://nextflow.io/docs/latest/plugins/developing-plugins.html
 - **HTCondor Manual**: https://htcondor.readthedocs.io/

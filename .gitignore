@@ -36,10 +36,14 @@
 !src/test/groovy/nextflow/executor/ospool/
 !src/test/groovy/nextflow/executor/ospool/*.groovy
 
-# Validation
-!validation/
-!validation/main.nf
-!validation/nextflow.config
+# Examples
+!examples/
+!examples/README.md
+!examples/*/
+!examples/*/*.nf
+!examples/*/*.config
+!examples/*/scripts/
+!examples/*/scripts/*.sh
 
 # Nix development environment
 !flake.nix

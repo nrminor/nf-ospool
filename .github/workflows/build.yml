@@ -47,8 +47,16 @@ jobs:
         with:
           version: "${{ matrix.nextflow_version }}"
 
-      - name: Install
+      - name: Install plugin
         run: make install
 
-      - name: Test
-        run: nextflow run validation/ -plugins nf-ospool@0.1.0
+      - name: Verify plugin installation
+        run: |
+          echo "Checking installed plugins..."
+          nextflow plugin list
+          echo ""
+          echo "Testing plugin loads correctly..."
+          cd examples/basic
+          nextflow config -plugins nf-ospool@0.1.0
+          echo ""
+          echo "✅ Plugin installed and loads successfully"
