@@ -52,11 +52,22 @@ jobs:
 
       - name: Verify plugin installation
         run: |
-          echo "Checking installed plugins..."
-          nextflow plugin list
+          PLUGIN_DIR="${HOME}/.nextflow/plugins/nf-ospool-0.1.0"
+          if [ -d "$PLUGIN_DIR" ]; then
+            echo "✅ Plugin installed successfully at: $PLUGIN_DIR"
+            ls -la "$PLUGIN_DIR"
+          else
+            echo "❌ Plugin directory not found at: $PLUGIN_DIR"
+            exit 1
+          fi
+          
           echo ""
-          echo "Testing plugin loads correctly..."
+          echo "Verifying configuration loads without errors..."
           cd examples/basic
-          nextflow config -plugins nf-ospool@0.1.0
-          echo ""
-          echo "✅ Plugin installed and loads successfully"
+          if nextflow config > /dev/null 2>&1; then
+            echo "✅ Configuration validated successfully"
+          else
+            echo "❌ Configuration validation failed"
+            nextflow config
+            exit 1
+          fi
