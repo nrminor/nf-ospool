@@ -1,5 +1,5 @@
 /*
- * Copyright 2025, Seqera Labs
+ * Copyright 2013-2024, Seqera Labs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,29 @@
  * limitations under the License.
  */
 
-package acme.plugin
+package nextflow.executor.ospool
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 import nextflow.plugin.BasePlugin
 import org.pf4j.PluginWrapper
 
 /**
- * The plugin entry point
+ * Nextflow plugin for Open Science Pool (OSPool) executor
+ *
+ * @author Nicholas Minor
  */
+@Slf4j
 @CompileStatic
-class MyPlugin extends BasePlugin {
+class OspoolPlugin extends BasePlugin {
 
-    MyPlugin(PluginWrapper wrapper) {
+    OspoolPlugin(PluginWrapper wrapper) {
         super(wrapper)
+    }
+
+    @Override
+    void start() {
+        super.start()
+        log.info "OSPool executor plugin started"
     }
 }

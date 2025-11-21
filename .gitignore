@@ -1,8 +1,61 @@
-# Ignore Gradle project-specific cache directory
-.gradle
-.idea
-.nextflow*
+# Ignore everything by default
+*
 
-# Ignore Gradle build output directory
-build
-work
+# Git configuration
+!.gitignore
+
+# CI/CD
+!.github/
+!.github/workflows/
+!.github/workflows/build.yml
+
+# Gradle build system
+!gradle/
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!gradlew
+!build.gradle
+!settings.gradle
+
+# Source code
+!src/
+!src/main/
+!src/main/groovy/
+!src/main/groovy/acme/
+!src/main/groovy/acme/plugin/
+!src/main/groovy/acme/plugin/*.groovy
+!src/main/groovy/nextflow/
+!src/main/groovy/nextflow/executor/
+!src/main/groovy/nextflow/executor/ospool/
+!src/main/groovy/nextflow/executor/ospool/*.groovy
+
+# Test code
+!src/test/
+!src/test/groovy/
+!src/test/groovy/acme/
+!src/test/groovy/acme/plugin/
+!src/test/groovy/acme/plugin/*.groovy
+!src/test/groovy/nextflow/
+!src/test/groovy/nextflow/executor/
+!src/test/groovy/nextflow/executor/ospool/
+!src/test/groovy/nextflow/executor/ospool/*.groovy
+
+# Validation
+!validation/
+!validation/main.nf
+!validation/nextflow.config
+
+# Nix development environment
+!flake.nix
+!flake.lock
+
+# direnv integration
+!.envrc
+
+# Build automation
+!Makefile
+
+# Documentation
+!README.md
+!COPYING

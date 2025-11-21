@@ -5,13 +5,56 @@ plugins {
 version = '0.1.0'
 
 nextflowPlugin {
-    nextflowVersion = '24.10.0'
+    nextflowVersion = '25.08.0-edge'
 
-    provider = 'provider-name'
-    className = 'acme.plugin.MyPlugin'
+    provider = 'UW-Madison CHTC'
+    description = 'Nextflow executor for the Open Science Pool HTCondor environment'
+    className = 'nextflow.executor.ospool.OspoolPlugin'
+    useDefaultDependencies = false
     extensionPoints = [
-        'acme.plugin.MyExtension',
-        'acme.plugin.MyFactory'
+        'nextflow.executor.ospool.OspoolExecutor',
     ]
+}
 
+repositories {
+    mavenCentral()
+    maven { url = 'https://s3-eu-west-1.amazonaws.com/maven.seqera.io/releases' }
+    maven { url = 'https://s3-eu-west-1.amazonaws.com/maven.seqera.io/snapshots' }
+}
+
+sourceSets {
+    main.java.srcDirs = []
+    main.groovy.srcDirs = ['src/main/groovy']
+    main.resources.srcDirs = ['src/resources']
+    test.groovy.srcDirs = ['src/test/groovy']
+    test.java.srcDirs = []
+    test.resources.srcDirs = ['src/testResources']
+}
+
+configurations {
+    // Exclude slf4j-api to avoid conflicts with Nextflow's logging
+    runtimeClasspath.exclude group: 'org.slf4j', module: 'slf4j-api'
+}
+
+ext {
+    nextflowVersion = '25.08.0-edge'
+}
+
+dependencies {
+    compileOnly "io.nextflow:nextflow:$nextflowVersion"
+    compileOnly 'org.slf4j:slf4j-api:2.0.17'
+    compileOnly 'org.pf4j:pf4j:3.12.0'
+    
+    testImplementation "org.apache.groovy:groovy:4.0.26"
+    testImplementation "org.apache.groovy:groovy-nio:4.0.26"
+    testImplementation "io.nextflow:nextflow:$nextflowVersion"
+    testImplementation "org.apache.groovy:groovy-test:4.0.26"
+    testImplementation "cglib:cglib-nodep:3.3.0"
+    testImplementation "org.objenesis:objenesis:3.1"
+    testImplementation "org.spockframework:spock-core:2.3-groovy-4.0"
+    testImplementation "org.spockframework:spock-junit4:2.3-groovy-4.0"
+    testImplementation "com.google.jimfs:jimfs:1.1"
+    
+    testImplementation(testFixtures("io.nextflow:nextflow:$nextflowVersion"))
+    testImplementation(testFixtures("io.nextflow:nf-commons:$nextflowVersion"))
 }
