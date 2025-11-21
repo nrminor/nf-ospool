@@ -23,9 +23,6 @@
 !src/
 !src/main/
 !src/main/groovy/
-!src/main/groovy/acme/
-!src/main/groovy/acme/plugin/
-!src/main/groovy/acme/plugin/*.groovy
 !src/main/groovy/nextflow/
 !src/main/groovy/nextflow/executor/
 !src/main/groovy/nextflow/executor/ospool/
@@ -34,9 +31,6 @@
 # Test code
 !src/test/
 !src/test/groovy/
-!src/test/groovy/acme/
-!src/test/groovy/acme/plugin/
-!src/test/groovy/acme/plugin/*.groovy
 !src/test/groovy/nextflow/
 !src/test/groovy/nextflow/executor/
 !src/test/groovy/nextflow/executor/ospool/
