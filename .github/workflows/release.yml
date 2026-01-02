@@ -29,17 +29,22 @@ jobs:
         with:
           java-version: 17
           distribution: 'temurin'
+          cache: 'gradle'
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
       
       - name: Build plugin
         run: ./gradlew assemble
         env:
           GRADLE_OPTS: '-Dorg.gradle.daemon=false'
       
-      - name: Get version from tag
+      - name: Get version from build.gradle
         id: get_version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_REF_NAME: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          VERSION=$(grep "^version = " build.gradle | sed "s/version = '\(.*\)'/\1/")
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Detected version: ${VERSION}"
       
       - name: Verify plugin JAR exists
         run: |
