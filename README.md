@@ -34,7 +34,7 @@ plugins {
 
 process {
     executor = 'ospool'
-    
+
     // OSPool-specific cluster options
     clusterOptions = 'HasCHTCStaging=true'
 }
@@ -43,7 +43,7 @@ executor {
     $ospool {
         // Required: where to write submit files (not on /staging)
         submitFileDir = '.nextflow/ospool-submit'
-        
+
         // Path normalization for symlinked filesystems
         pathMappings = [
             '/mnt/htc-cephfs/fuse/root/staging': '/staging'
@@ -70,15 +70,15 @@ Each example includes a complete `main.nf` and `nextflow.config` with detailed c
 
 ### Executor Configuration (`executor.$ospool`)
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `submitFileDir` | String | Required when `sharedFilesystem=false` | Directory for HTCondor submit files |
-| `sharedFilesystem` | Boolean | `false` | Whether executor uses shared filesystem |
-| `pathMappings` | Map | `null` | Path mappings for symlinked filesystems |
-| `autoStageDirectories` | List | Auto-detected | Directories to stage if not accessible |
-| `stageBinDir` | Boolean/String | `'auto'` | Whether to stage bin directory |
-| `unstageOutputs` | Boolean/String | `'auto'` | Whether to unstage outputs |
-| `getenv` | Boolean | Based on `sharedFilesystem` | Inherit environment from submit node |
+| Option                 | Type           | Default                                | Description                             |
+| ---------------------- | -------------- | -------------------------------------- | --------------------------------------- |
+| `submitFileDir`        | String         | Required when `sharedFilesystem=false` | Directory for HTCondor submit files     |
+| `sharedFilesystem`     | Boolean        | `false`                                | Whether executor uses shared filesystem |
+| `pathMappings`         | Map            | `null`                                 | Path mappings for symlinked filesystems |
+| `autoStageDirectories` | List           | Auto-detected                          | Directories to stage if not accessible  |
+| `stageBinDir`          | Boolean/String | `'auto'`                               | Whether to stage bin directory          |
+| `unstageOutputs`       | Boolean/String | `'auto'`                               | Whether to unstage outputs              |
+| `getenv`               | Boolean        | Based on `sharedFilesystem`            | Inherit environment from submit node    |
 
 ### Process Directives
 
@@ -90,9 +90,9 @@ process myTask {
     memory '8 GB'
     disk '10 GB'
     time '2h'
-    
+
     clusterOptions 'HasCHTCStaging=true'
-    
+
     """
     your_command_here
     """

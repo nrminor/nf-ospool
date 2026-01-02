@@ -728,7 +728,7 @@ class OspoolExecutor extends AbstractGridExecutor implements ExtensionPoint {
             def cols = line.tokenize(' ')
             def id = cols[0]
             def st = cols[5]
-            result[id] = DECODE_STATUS[st]
+            result[id] = DECODE_STATUS.getOrDefault(st, QueueStatus.UNKNOWN)
         }
 
         return result

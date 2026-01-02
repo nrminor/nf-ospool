@@ -75,9 +75,9 @@
             fzf-make
             bat
             ripgrep
-            opencode
-            btop
-            lazygit
+            # opencode
+            # btop
+            # lazygit
           ];
 
           shellHook = ''

@@ -16,6 +16,7 @@
 
 package nextflow.executor.ospool
 
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -81,16 +82,17 @@ class OspoolWrapperBuilder extends BashWrapperBuilder {
     }
 
     /**
-     * Determine if control files (.command.out, .command.err, .command.trace) should be unstaged.
+     * Determine if outputs should be unstaged from the HTCondor sandbox.
      *
-     * When not using shared filesystem, HTCondor runs in an isolated sandbox and these files
-     * need to be copied back to the work directory.
+     * When not using shared filesystem, HTCondor runs in an isolated sandbox and files
+     * need to be copied back to the work directory. This applies to both control files
+     * (.command.out, .command.err, .command.trace) and task output files.
      *
      * NOTE: This method may be called by parent if it exists, but is not an override.
      *
-     * @return true if control files should be unstaged
+     * @return true if outputs should be unstaged
      */
-    protected boolean shouldUnstageControls() {
+    protected boolean shouldUnstageOutputs() {
         final explicit = executor.config.getExecConfigProp(executor.name, 'unstageOutputs', null)
         
         if( explicit != null && explicit != 'auto' ) {
@@ -101,23 +103,13 @@ class OspoolWrapperBuilder extends BashWrapperBuilder {
     }
 
     /**
-     * Determine if output files should be unstaged.
+     * Determine if control files should be unstaged.
+     * Delegates to shouldUnstageOutputs() since the logic is identical.
      *
-     * When not using shared filesystem, HTCondor transfers outputs to the submit directory,
-     * and Nextflow needs to unstage them to the work directory.
-     *
-     * NOTE: This method may be called by parent if it exists, but is not an override.
-     *
-     * @return true if output files should be unstaged
+     * @return true if control files should be unstaged
      */
-    protected boolean shouldUnstageOutputs() {
-        final explicit = executor.config.getExecConfigProp(executor.name, 'unstageOutputs', null)
-        
-        if( explicit != null && explicit != 'auto' ) {
-            return explicit as boolean
-        }
-        
-        return !executor.isSharedFilesystem()
+    protected boolean shouldUnstageControls() {
+        return shouldUnstageOutputs()
     }
 
     /**
@@ -281,7 +273,7 @@ class OspoolWrapperBuilder extends BashWrapperBuilder {
         
         // Create parent directories if needed
         if( condorFile.parent != this.workDir ) {
-            condorFile.parent.toFile().mkdirs()
+            Files.createDirectories(condorFile.parent)
         }
         
         // Write HTCondor submit file
