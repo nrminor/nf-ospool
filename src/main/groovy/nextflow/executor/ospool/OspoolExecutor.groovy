@@ -23,6 +23,7 @@ import java.nio.file.StandardCopyOption
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import nextflow.Const
 import nextflow.executor.AbstractGridExecutor
 import nextflow.executor.BashWrapperBuilder
 import nextflow.executor.ExecutorConfig
@@ -344,10 +345,12 @@ class OspoolExecutor extends AbstractGridExecutor implements ExtensionPoint {
             }
             
             // Stage secrets directory if enabled and not accessible
+            // Derive location from documented behavior (NXF_SECRETS_FILE env var or default path)
+            // rather than accessing private fields in LocalSecretsProvider
             if( SecretsLoader.isEnabled() ) {
                 def provider = SecretsLoader.instance.load()
                 if( provider instanceof LocalSecretsProvider ) {
-                    def secretsDir = provider.@storeFile?.parent
+                    def secretsDir = resolveSecretsDirectory()
                     if( secretsDir && !isAccessibleFromComputeNodes(secretsDir) ) {
                         log.debug "[OSPOOL] Secrets directory not accessible, will stage: ${secretsDir}"
                         autoStageList << secretsDir.toString()
@@ -423,6 +426,25 @@ class OspoolExecutor extends AbstractGridExecutor implements ExtensionPoint {
         }
         
         return Paths.get(pathStr)
+    }
+
+    /**
+     * Resolve the secrets directory path from documented Nextflow behavior.
+     *
+     * This derives the secrets directory location from the NXF_SECRETS_FILE environment
+     * variable or the default path (APP_HOME_DIR/secrets), rather than accessing private
+     * fields in LocalSecretsProvider. This approach is more stable across Nextflow versions.
+     *
+     * @return Path to the secrets directory, or null if it cannot be determined
+     */
+    protected Path resolveSecretsDirectory() {
+        def secretsFile = System.getenv('NXF_SECRETS_FILE')
+        if( secretsFile ) {
+            // Custom secrets file location specified
+            return Paths.get(secretsFile).parent
+        }
+        // Default location: $NXF_HOME/secrets (where store.json lives)
+        return Const.APP_HOME_DIR.resolve('secrets')
     }
 
     /**

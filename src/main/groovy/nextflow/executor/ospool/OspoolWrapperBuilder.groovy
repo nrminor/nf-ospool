@@ -22,7 +22,9 @@ import java.nio.file.Paths
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import nextflow.container.ApptainerBuilder
 import nextflow.container.ContainerBuilder
+import nextflow.container.SingularityBuilder
 import nextflow.executor.BashWrapperBuilder
 import nextflow.executor.ScriptFileCopyStrategy
 import nextflow.file.FileHelper
@@ -197,6 +199,20 @@ class OspoolWrapperBuilder extends BashWrapperBuilder {
         // Example: if /home/user/project was staged to /staging/work/.staged-project,
         // we mount /staging/work/.staged-project:/home/user/project in the container
         if( executor.getAutoStagedDirectories() ) {
+            // Verify container runtime supports our bind mount syntax
+            // Auto-staged bind mounts use Singularity/Apptainer -B syntax
+            final isSingularityLike = (builder instanceof SingularityBuilder) || 
+                                      (builder instanceof ApptainerBuilder)
+            
+            if( !isSingularityLike ) {
+                throw new IllegalStateException(
+                    "OSPool auto-staged directory bind mounts require Singularity or Apptainer. " +
+                    "Current container runtime (${builder.class.simpleName}) is not supported. " +
+                    "Either use Singularity/Apptainer (recommended for OSPool) or disable auto-staging " +
+                    "by setting executor.\$ospool.autoStageDirectories = []"
+                )
+            }
+            
             executor.getAutoStagedDirectories().each { originalPath, stagedPath ->
                 log.trace "[OSPOOL] Adding auto-staged bind mount: ${stagedPath} -> ${originalPath}"
                 builder.addRunOptions("-B ${stagedPath}:${originalPath}")
