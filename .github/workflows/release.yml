@@ -5,23 +5,39 @@ on:
     workflows: ["nf-ospool CI"]
     types:
       - completed
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v0.1.0)'
+        required: true
+        type: string
 
 jobs:
   release:
     name: Create Release
     if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      startsWith(github.event.workflow_run.head_branch, 'v')
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       startsWith(github.event.workflow_run.head_branch, 'v'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
     
     steps:
+      - name: Determine ref
+        id: determine_ref
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "REF=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "REF=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: ${{ steps.determine_ref.outputs.REF }}
           fetch-depth: 0
       
       - name: Setup Java 17
@@ -46,23 +62,83 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
           echo "Detected version: ${VERSION}"
       
-      - name: Verify plugin JAR exists
+      - name: Verify plugin artifacts exist
         run: |
+          echo "=== JAR ==="
           ls -lh build/libs/
           test -f build/libs/nf-ospool-${{ steps.get_version.outputs.VERSION }}.jar
+          echo "=== ZIP ==="
+          ls -lh build/distributions/
+          test -f build/distributions/nf-ospool-${{ steps.get_version.outputs.VERSION }}.zip
+      
+      - name: Generate meta.json for Nextflow plugin loading
+        id: generate_meta
+        run: |
+          VERSION="${{ steps.get_version.outputs.VERSION }}"
+          ZIP_FILE="build/distributions/nf-ospool-${VERSION}.zip"
+          META_FILE="build/distributions/nf-ospool-${VERSION}-meta.json"
+          
+          # Calculate SHA512
+          SHA512=$(sha512sum "${ZIP_FILE}" | awk '{print $1}')
+          echo "SHA512: ${SHA512}"
+          
+          # Get current timestamp in ISO 8601 format
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%S.000000+00:00")
+          
+          # Get minimum Nextflow version from build.gradle
+          NF_VERSION=$(grep "nextflowVersion = " build.gradle | head -1 | sed "s/.*nextflowVersion = '\(.*\)'/\1/")
+          echo "Nextflow version requirement: >=${NF_VERSION}"
+          
+          # Create meta.json
+          cat > "${META_FILE}" << EOF
+          {
+            "version": "${VERSION}",
+            "url": "https://github.com/${{ github.repository }}/releases/download/${{ steps.determine_ref.outputs.REF }}/nf-ospool-${VERSION}.zip",
+            "date": "${DATE}",
+            "sha512sum": "${SHA512}",
+            "requires": ">=${NF_VERSION}"
+          }
+          EOF
+          
+          echo "Generated meta.json:"
+          cat "${META_FILE}"
+          
+          echo "META_FILE=${META_FILE}" >> $GITHUB_OUTPUT
+      
+      - name: Delete existing release if present
+        run: |
+          TAG="${{ steps.determine_ref.outputs.REF }}"
+          if gh release view "${TAG}" > /dev/null 2>&1; then
+            echo "Deleting existing release for ${TAG}..."
+            gh release delete "${TAG}" --yes
+          else
+            echo "No existing release for ${TAG}"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.event.workflow_run.head_branch }}
+          tag_name: ${{ steps.determine_ref.outputs.REF }}
           files: |
-            build/libs/nf-ospool-${{ steps.get_version.outputs.VERSION }}.jar
+            build/distributions/nf-ospool-${{ steps.get_version.outputs.VERSION }}.zip
+            build/distributions/nf-ospool-${{ steps.get_version.outputs.VERSION }}-meta.json
           body: |
             # nf-ospool ${{ steps.get_version.outputs.VERSION }}
             
             Nextflow plugin for the Open Science Pool (OSPool) HTCondor environment.
             
-            ## Installation
+            ## Installation (via GitHub - no registry required)
+            
+            Set the test repository environment variable and run your pipeline:
+            
+            ```bash
+            export NXF_PLUGINS_TEST_REPOSITORY="https://github.com/${{ github.repository }}/releases/download/${{ steps.determine_ref.outputs.REF }}/nf-ospool-${{ steps.get_version.outputs.VERSION }}-meta.json"
+            nextflow run your-pipeline.nf -plugins nf-ospool@${{ steps.get_version.outputs.VERSION }}
+            ```
+            
+            Or add to your `nextflow.config`:
             
             ```groovy
             plugins {
