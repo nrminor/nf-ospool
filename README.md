@@ -15,13 +15,21 @@ This plugin provides a custom Nextflow executor (`ospool`) specifically designed
 
 ### Installation
 
-Add the plugin to your Nextflow configuration:
+This plugin is not yet available in the official Nextflow plugin registry. To use it, point Nextflow to the GitHub releases:
+
+```bash
+export NXF_PLUGINS_TEST_REPOSITORY="https://github.com/nrminor/nf-ospool/releases/download/v0.1.0/nf-ospool-0.1.0-meta.json"
+```
+
+Then add the plugin to your Nextflow configuration:
 
 ```groovy
 plugins {
     id 'nf-ospool@0.1.0'
 }
 ```
+
+> **Tip**: Add the `export` command to your `~/.bashrc` or `~/.bash_profile` to avoid setting it every session.
 
 ### Basic Configuration
 
