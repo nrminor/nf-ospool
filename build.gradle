@@ -7,7 +7,7 @@ version = '0.1.0'
 nextflowPlugin {
     nextflowVersion = '25.10.0'
 
-    provider = 'UW-Madison CHTC'
+    provider = 'University of Wisconsin - Madison'
     description = 'Nextflow executor for the Open Science Pool HTCondor environment'
     className = 'nextflow.executor.ospool.OspoolPlugin'
     useDefaultDependencies = false
