@@ -2,7 +2,7 @@
 
 Nextflow plugin for the Open Science Pool (OSPool) HTCondor environment.
 
-## Overview
+## Summary
 
 This plugin provides a custom Nextflow executor (`ospool`) specifically designed for the Open Science Pool HTCondor environment at UW-Madison CHTC and similar infrastructures. It addresses unique constraints in OSPool environments:
 
@@ -11,25 +11,17 @@ This plugin provides a custom Nextflow executor (`ospool`) specifically designed
 - **Path normalization**: Symlinked paths must be normalized for container bind mounts
 - **Directory staging**: Project directories and secrets may not be accessible from compute nodes
 
-## Quick Start
+## Get Started
 
 ### Installation
 
-This plugin is not yet available in the official Nextflow plugin registry. To use it, point Nextflow to the GitHub releases:
-
-```bash
-export NXF_PLUGINS_TEST_REPOSITORY="https://github.com/nrminor/nf-ospool/releases/download/v0.1.0/nf-ospool-0.1.0-meta.json"
-```
-
-Then add the plugin to your Nextflow configuration:
+This plugin is available in the official Nextflow plugin registry. Add it to your Nextflow configuration:
 
 ```groovy
 plugins {
-    id 'nf-ospool@0.1.0'
+    id 'nf-ospool@0.1.1'
 }
 ```
-
-> **Tip**: Add the `export` command to your `~/.bashrc` or `~/.bash_profile` to avoid setting it every session.
 
 ### Basic Configuration
 
@@ -37,7 +29,7 @@ plugins {
 // nextflow.config
 
 plugins {
-    id 'nf-ospool@0.1.0'
+    id 'nf-ospool@0.1.1'
 }
 
 process {
@@ -124,7 +116,7 @@ make install
 Test with Nextflow:
 
 ```bash
-nextflow run my-pipeline.nf -plugins nf-ospool@0.1.0
+nextflow run my-pipeline.nf -plugins nf-ospool@0.1.1
 ```
 
 ## Documentation

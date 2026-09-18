@@ -87,7 +87,7 @@ nextflow run main.nf
 
 ```groovy
 plugins {
-    id 'nf-ospool@0.1.0'
+    id 'nf-ospool@0.1.1'
 }
 
 process {
