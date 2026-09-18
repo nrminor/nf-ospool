@@ -28,6 +28,7 @@ import nextflow.executor.AbstractGridExecutor
 import nextflow.executor.BashWrapperBuilder
 import nextflow.executor.ExecutorConfig
 import nextflow.executor.GridTaskHandler
+import nextflow.executor.SimpleFileCopyStrategy
 import nextflow.processor.TaskBean
 import nextflow.processor.TaskRun
 import nextflow.secret.LocalSecretsProvider
@@ -615,7 +616,24 @@ class OspoolExecutor extends AbstractGridExecutor implements ExtensionPoint {
     BashWrapperBuilder createBashWrapperBuilder(TaskRun task) {
         final bean = new TaskBean(task)
         final pathMappings = config.getExecConfigProp(name, 'pathMappings', null) as Map<String,String>
-        final copyStrategy = new OspoolFileCopyStrategy(bean, pathMappings, this)
+        final sharedFilesystem = isSharedFilesystem()
+
+        // The container builder factory is package-private in Nextflow. Normalize
+        // its TaskBean input instead so staging and container mounts use one path.
+        if( !sharedFilesystem && bean.inputFiles ) {
+            final normalizedInputFiles = new LinkedHashMap<String,Path>()
+            for( Map.Entry<String,Path> entry : bean.inputFiles.entrySet() ) {
+                final absolutePath = entry.value.toAbsolutePath().toString()
+                final normalizedPath = normalizePathWithStaging(absolutePath, pathMappings)
+                normalizedInputFiles[entry.key] = normalizedPath == absolutePath
+                    ? entry.value
+                    : Paths.get(normalizedPath)
+            }
+            bean.inputFiles = normalizedInputFiles
+        }
+        final copyStrategy = sharedFilesystem
+            ? new OspoolFileCopyStrategy(bean, pathMappings, this)
+            : new SimpleFileCopyStrategy(bean)
         final builder = new OspoolWrapperBuilder(bean, task, this, copyStrategy)
         
         // Generate HTCondor submit file directives and store in manifest
